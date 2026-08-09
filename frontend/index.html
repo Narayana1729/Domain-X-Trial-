@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Domain-X — Master Industrial IoT Predictive Maintenance Dashboard</title>
-  <meta name="description" content="Domain-X Master Dashboard for Industrial IoT rotating machinery monitoring RPM, Temperature, Vibration FFT, ML Fault Classification, and GenAI Technician Guidance.">
+  <title>Domain-X — FFT Spectrum & Signal Diagnostics</title>
+  <meta name="description" content="Domain-X FFT Spectrum & Signal Diagnostics page featuring real-time spectral peak analysis, acceleration time-domain waveform, crest factor metrics, and harmonic classification.">
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 </head>
@@ -17,7 +17,7 @@
           <div class="brand-icon">X</div>
           <div>
             <span class="brand-title">Domain-X</span>
-            <span class="brand-tag">MASTER</span>
+            <span class="brand-tag">SIGNAL</span>
           </div>
         </div>
 
@@ -34,13 +34,13 @@
 
           <div class="nav-label">Component Views</div>
           <ul class="nav-menu">
-            <li class="nav-item active" data-view="master">
+            <li class="nav-item" data-view="master">
               <a href="#master">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
                 <span>Master Dashboard</span>
               </a>
             </li>
-            <li class="nav-item" data-view="fft">
+            <li class="nav-item active" data-view="fft">
               <a href="#fft">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 <span>FFT Spectrum View</span>
@@ -63,7 +63,7 @@
       </div>
 
       <div style="font-size: 0.75rem; color: var(--text-dim); text-align: center; border-top: 1px solid var(--border-color); padding-top: 16px;">
-        Domain-X Master Architecture<br>Sampling Rate: 10.24 kHz
+        FFT Signal Engine: Active<br>Sampling Rate: 10.24 kHz
       </div>
     </aside>
 
@@ -80,15 +80,15 @@
         </div>
 
         <div class="header-actions">
-          <div class="live-clock" id="liveClock">2026-08-09 18:38:00</div>
+          <div class="live-clock" id="liveClock">2026-08-09 18:42:00</div>
         </div>
       </header>
 
-      <!-- Dashboard Body with Component Pages -->
+      <!-- Dashboard Body -->
       <div class="dashboard-body">
         
         <!-- COMPONENT VIEW 1: MASTER DASHBOARD -->
-        <div class="page-view active" id="viewMasterOverview">
+        <div class="page-view" id="viewMasterOverview">
           <div class="page-title-row">
             <div>
               <h1 class="page-title">Domain-X Master Operational Dashboard</h1>
@@ -151,7 +151,7 @@
             </div>
           </div>
 
-          <!-- Simulated Machine State Switcher -->
+          <!-- Machine State Switcher -->
           <div class="state-toolbar">
             <div class="state-toolbar-title">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
@@ -280,7 +280,6 @@
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 24px;">
-              <!-- ML Diagnostic Card -->
               <div class="card">
                 <div class="card-header">
                   <h2 class="card-title">
@@ -308,7 +307,6 @@
                 </div>
               </div>
 
-              <!-- GenAI Technician Guidance Card -->
               <div class="card">
                 <div class="card-header">
                   <h2 class="card-title">
@@ -328,24 +326,456 @@
           </div>
         </div>
 
-        <!-- COMPONENT VIEW 2: FFT SPECTRUM ANALYSIS -->
+        <!-- COMPONENT VIEW 2: FFT SPECTRUM & SIGNAL DIAGNOSTICS PAGE -->
         <div class="page-view" id="viewFftAnalysis">
           <div class="page-title-row">
             <div>
-              <h1 class="page-title">FFT Frequency Spectrum Analyzer Component</h1>
-              <p class="page-subtitle">Detailed harmonic peak decomposition and fault frequency spectral signature inspection.</p>
+              <h1 class="page-title">FFT Spectrum & Signal Diagnostics</h1>
+              <p class="page-subtitle">Real-time spectral decomposition, raw acceleration waveform $a(t)$, envelope demodulation, bearing characteristic frequencies, and harmonic peak tracking.</p>
+            </div>
+            <div class="header-action-group">
+              <button class="btn-tool" id="btnExportSpectrumPng" title="Export Spectrum Image">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>Export Spectrum (PNG)</span>
+              </button>
+              <button class="btn-tool" id="btnExportPeakCsv" title="Export Spectral Peaks to CSV">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Export Peaks (CSV)</span>
+              </button>
             </div>
           </div>
 
+          <!-- Diagnostics Action & State Toolbar -->
+          <div class="diag-toolbar">
+            <div class="diag-toolbar-left">
+              <span class="diag-toolbar-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Signal Presets:
+              </span>
+              <div class="state-buttons">
+                <button class="btn-state active" data-state="healthy">Clean Baseline</button>
+                <button class="btn-state" data-state="bpfo">Bearing Outer Race (BPFO)</button>
+                <button class="btn-state" data-state="imbalance">Rotor Unbalance (1X)</button>
+                <button class="btn-state" data-state="misalignment">Shaft Misalignment (2X)</button>
+              </div>
+            </div>
+
+            <!-- Audio Stethoscope Synthesizer (Web Audio API) -->
+            <div class="audio-stethoscope-box">
+              <button class="btn-audio-toggle" id="btnAudioToggle" title="Toggle Acoustic Stethoscope Sound Synthesizer">
+                <svg id="audioIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <span id="audioBtnText">Acoustic Stethoscope</span>
+              </button>
+              <div class="audio-volume-slider-wrap">
+                <input type="range" id="audioVolumeSlider" min="0" max="100" value="35" title="Acoustic Stethoscope Volume">
+              </div>
+              <span class="audio-pulse-indicator" id="audioPulseIndicator" title="Acoustic Synth Inactive"></span>
+            </div>
+          </div>
+
+          <!-- Signal Diagnostics KPI Summary Cards (7 Metrics) -->
+          <div class="signal-kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Sampling Rate</span>
+                <div class="kpi-icon cyan">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value">10.24</span>
+                <span class="kpi-unit">kHz</span>
+              </div>
+              <div class="kpi-subtext">Nyquist: 5.12 kHz</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">FFT Resolution</span>
+                <div class="kpi-icon purple">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value">0.50</span>
+                <span class="kpi-unit">Hz</span>
+              </div>
+              <div class="kpi-subtext">Block: 4096 / N=8192</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Crest Factor (CF)</span>
+                <div class="kpi-icon amber">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="valCrestFactor">3.42</span>
+                <span class="kpi-unit">Ratio</span>
+              </div>
+              <div class="kpi-subtext" id="crestFactorStatus" style="color:var(--accent-emerald);">Nominal &lt; 3.5</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Kurtosis (Impulsiveness)</span>
+                <div class="kpi-icon rose">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="valKurtosis">2.95</span>
+                <span class="kpi-unit">β₂</span>
+              </div>
+              <div class="kpi-subtext" id="kurtosisStatus" style="color:var(--accent-emerald);">Gaussian / Normal</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Velocity RMS</span>
+                <div class="kpi-icon emerald">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="valSignalVibRms">1.24</span>
+                <span class="kpi-unit">mm/s</span>
+              </div>
+              <div class="kpi-subtext" id="signalIsoZone" style="color:var(--accent-emerald);">ISO 10816 Zone A</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Peak-to-Peak (pk-pk)</span>
+                <div class="kpi-icon indigo">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="valPkToPkG">2.48</span>
+                <span class="kpi-unit">g pk-pk</span>
+              </div>
+              <div class="kpi-subtext" id="labelPkAmp">Peak: 0.85 g</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Dominant Peak</span>
+                <div class="kpi-icon cyan">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="valDominantPeakFreq">29.8</span>
+                <span class="kpi-unit">Hz</span>
+              </div>
+              <div class="kpi-subtext" id="dominantPeakFaultLabel" style="color:var(--accent-cyan);">1X Running Speed</div>
+            </div>
+          </div>
+
+          <!-- Spectrum & Waterfall Grid -->
+          <div class="spectrum-analytics-grid">
+            <!-- Main High-Resolution FFT Spectrum Card -->
+            <div class="card spectrum-main-card">
+              <div class="card-header">
+                <div class="card-header-left">
+                  <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    FFT Frequency Spectrum Analyzer
+                  </h2>
+                  <div class="spectrum-hud-badge" id="spectrumHud">Cursor: Hover over spectrum for crosshair telemetry</div>
+                </div>
+
+                <div class="spectrum-controls-group">
+                  <!-- Scale Mode: Linear vs dB Log -->
+                  <div class="toggle-pill-group">
+                    <button class="toggle-pill active" id="btnScaleLin" data-scale="lin">Lin (g)</button>
+                    <button class="toggle-pill" id="btnScaleDb" data-scale="db">Log (dB)</button>
+                  </div>
+
+                  <!-- Windowing Function -->
+                  <div class="select-wrapper-compact">
+                    <label for="selectWindowing">Window:</label>
+                    <select id="selectWindowing">
+                      <option value="hanning">Hanning</option>
+                      <option value="hamming">Hamming</option>
+                      <option value="flattop">Flat-Top</option>
+                      <option value="blackman">Blackman</option>
+                      <option value="rectangular">Uniform / Rect</option>
+                    </select>
+                  </div>
+
+                  <!-- Frequency Range Bandwidth -->
+                  <div class="range-pills">
+                    <button class="range-pill active" data-range="500">0 - 500 Hz</button>
+                    <button class="range-pill" data-range="1000">0 - 1000 Hz</button>
+                    <button class="range-pill" data-range="2000">0 - 2000 Hz</button>
+                    <button class="range-pill" data-range="5000">0 - 5000 Hz</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="fft-canvas-wrapper" id="fftCanvasWrapper">
+                <canvas id="fftCanvasPage"></canvas>
+                <div class="canvas-crosshair-tooltip" id="canvasCrosshairTooltip"></div>
+              </div>
+
+              <!-- Spectrum Fault Legend & Marker Filters -->
+              <div class="fft-legend-bar">
+                <div class="legend-filter-label">Active Harmonic & Defect Markers:</div>
+                <div class="fft-legend">
+                  <div class="legend-tag active" data-marker="1x" id="markerTag1x">
+                    <span class="legend-dot" style="background:#06b6d4;"></span>
+                    <span id="legend1xText">1X Running Speed (29.8 Hz)</span>
+                  </div>
+                  <div class="legend-tag active" data-marker="2x" id="markerTag2x">
+                    <span class="legend-dot" style="background:#8b5cf6;"></span>
+                    <span id="legend2xText">2X Harmonics (59.5 Hz)</span>
+                  </div>
+                  <div class="legend-tag active" data-marker="bpfo" id="markerTagBpfo">
+                    <span class="legend-dot" style="background:#ef4444;"></span>
+                    <span id="legendBpfoText">BPFO Outer Race (106.5 Hz)</span>
+                  </div>
+                  <div class="legend-tag active" data-marker="bpfi" id="markerTagBpfi">
+                    <span class="legend-dot" style="background:#f59e0b;"></span>
+                    <span id="legendBpfiText">BPFI Inner Race (161.4 Hz)</span>
+                  </div>
+                  <div class="legend-tag active" data-marker="bsf" id="markerTagBsf">
+                    <span class="legend-dot" style="background:#ec4899;"></span>
+                    <span id="legendBsfText">BSF Ball Spin (71.2 Hz)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Spectral Waterfall / Spectrogram History Card -->
+            <div class="card waterfall-card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                  Time-Frequency Waterfall Spectrogram
+                </h2>
+                <div class="waterfall-badge">Cascading 30s Spectral History</div>
+              </div>
+              <div class="waterfall-canvas-container">
+                <canvas id="waterfallCanvasPage"></canvas>
+              </div>
+              <div class="waterfall-colorbar-row">
+                <span class="colorbar-label">Spectral Energy Density:</span>
+                <div class="waterfall-gradient-bar"></div>
+                <div class="colorbar-labels">
+                  <span>-60 dB (Noise Floor)</span>
+                  <span>-30 dB</span>
+                  <span>-10 dB</span>
+                  <span>0 dB (Peak Fault)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time-Domain Waveform & Bearing Kinematics Row -->
+          <div class="waveform-bearing-grid">
+            <!-- Raw Time-Domain Acceleration Waveform a(t) & Envelope Demodulation Card -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-left">
+                  <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2.5"><path d="M2 12h5l3 8 4-16 4 16 3-8h5"/></svg>
+                    Time-Domain Vibration Waveform
+                  </h2>
+                  <span class="waveform-hud-metric" id="valPeakToPeak">Pk-Pk: 2.48 g | RMS: 0.88 g</span>
+                </div>
+
+                <div class="waveform-controls">
+                  <!-- Raw vs Hilbert Envelope Demodulation Mode -->
+                  <div class="toggle-pill-group">
+                    <button class="toggle-pill active" id="btnWaveformRaw" data-trace="raw">Raw a(t)</button>
+                    <button class="toggle-pill" id="btnWaveformEnv" data-trace="envelope">Envelope Demodulation</button>
+                  </div>
+
+                  <!-- Timebase Scale -->
+                  <div class="timebase-pills">
+                    <button class="timebase-pill active" data-timebase="20">20 ms/div</button>
+                    <button class="timebase-pill" data-timebase="50">50 ms/div</button>
+                    <button class="timebase-pill" data-timebase="100">100 ms/div</button>
+                  </div>
+
+                  <!-- Freeze / Live Toggle -->
+                  <button class="btn-icon-toggle" id="btnFreezeWaveform" title="Freeze / Pause Waveform Stream">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    <span id="freezeBtnText">Freeze</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="waveform-container">
+                <canvas id="waveformCanvasPage"></canvas>
+              </div>
+
+              <div class="waveform-footer-info">
+                <div class="wf-info-item">
+                  <span class="wf-info-label">Signal Source:</span>
+                  <span class="wf-info-val">PCB Piezotronics 603C01 Piezoelectric Accelerometer</span>
+                </div>
+                <div class="wf-info-item">
+                  <span class="wf-info-label">Impact Repetition Period:</span>
+                  <span class="wf-info-val" id="wfImpactPeriod">T_bpfo = 9.39 ms (106.5 Hz)</span>
+                </div>
+                <div class="wf-info-item">
+                  <span class="wf-info-label">Envelope Demod Band:</span>
+                  <span class="wf-info-val">Bandpass 2.0 kHz - 10.0 kHz + Hilbert Transform</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bearing Kinematics & Fault Frequency Calculator Card -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/></svg>
+                  Bearing Kinematics & Defect Frequency Calculator
+                </h2>
+                <div class="select-wrapper-compact">
+                  <label for="selectBearingModel">Model:</label>
+                  <select id="selectBearingModel">
+                    <option value="skf6208">SKF 6208 Deep Groove (Nb=8, Dp=60mm, d=12mm)</option>
+                    <option value="fag6310">FAG 6310 Heavy Duty (Nb=8, Dp=80mm, d=19mm)</option>
+                    <option value="nsk6205">NSK 6205 Standard (Nb=9, Dp=38.5mm, d=7.94mm)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="bearing-kinematics-grid">
+                <div class="bearing-freq-box" id="boxBpfo">
+                  <div class="bearing-freq-header">
+                    <span class="bearing-freq-code">BPFO</span>
+                    <span class="status-pill-mini fault" id="badgeBpfoStatus">Monitored</span>
+                  </div>
+                  <div class="bearing-freq-name">Outer Race Ball Pass</div>
+                  <div class="bearing-freq-value" id="valCalcBpfo">106.5 Hz</div>
+                  <div class="bearing-freq-order" id="orderBpfo">3.57X RPM</div>
+                  <div class="bearing-freq-formula">f_bpfo = (N_b/2)·f_r·(1 - (d/D_p)cosα)</div>
+                </div>
+
+                <div class="bearing-freq-box" id="boxBpfi">
+                  <div class="bearing-freq-header">
+                    <span class="bearing-freq-code">BPFI</span>
+                    <span class="status-pill-mini healthy" id="badgeBpfiStatus">Monitored</span>
+                  </div>
+                  <div class="bearing-freq-name">Inner Race Ball Pass</div>
+                  <div class="bearing-freq-value" id="valCalcBpfi">161.4 Hz</div>
+                  <div class="bearing-freq-order" id="orderBpfi">5.43X RPM</div>
+                  <div class="bearing-freq-formula">f_bpfi = (N_b/2)·f_r·(1 + (d/D_p)cosα)</div>
+                </div>
+
+                <div class="bearing-freq-box" id="boxBsf">
+                  <div class="bearing-freq-header">
+                    <span class="bearing-freq-code">BSF</span>
+                    <span class="status-pill-mini healthy" id="badgeBsfStatus">Monitored</span>
+                  </div>
+                  <div class="bearing-freq-name">Ball Spin Frequency</div>
+                  <div class="bearing-freq-value" id="valCalcBsf">71.2 Hz</div>
+                  <div class="bearing-freq-order" id="orderBsf">2.39X RPM</div>
+                  <div class="bearing-freq-formula">f_bsf = (D_p/2d)·f_r·(1 - ((d/D_p)cosα)²)</div>
+                </div>
+
+                <div class="bearing-freq-box" id="boxFtf">
+                  <div class="bearing-freq-header">
+                    <span class="bearing-freq-code">FTF</span>
+                    <span class="status-pill-mini healthy" id="badgeFtfStatus">Monitored</span>
+                  </div>
+                  <div class="bearing-freq-name">Fundamental Train (Cage)</div>
+                  <div class="bearing-freq-value" id="valCalcFtf">11.9 Hz</div>
+                  <div class="bearing-freq-order" id="orderFtf">0.40X RPM</div>
+                  <div class="bearing-freq-formula">f_ftf = 0.5·f_r·(1 - (d/D_p)cosα)</div>
+                </div>
+              </div>
+
+              <!-- Energy Distribution Breakdown -->
+              <div class="fault-energy-matrix-section">
+                <div class="matrix-section-title">Harmonic & Spectral Energy Distribution</div>
+                <div class="energy-bars-container">
+                  <div class="energy-bar-row">
+                    <div class="energy-bar-label">
+                      <span>1X Mass Unbalance</span>
+                      <strong id="energy1xVal">18%</strong>
+                    </div>
+                    <div class="progress-bar-bg">
+                      <div class="progress-bar-fill" id="energy1xBar" style="width: 18%; background: var(--accent-cyan);"></div>
+                    </div>
+                  </div>
+
+                  <div class="energy-bar-row">
+                    <div class="energy-bar-label">
+                      <span>2X-4X Misalignment / Looseness</span>
+                      <strong id="energy2xVal">12%</strong>
+                    </div>
+                    <div class="progress-bar-bg">
+                      <div class="progress-bar-fill" id="energy2xBar" style="width: 12%; background: var(--accent-purple);"></div>
+                    </div>
+                  </div>
+
+                  <div class="energy-bar-row">
+                    <div class="energy-bar-label">
+                      <span>Bearing Defect Band (BPFO/BPFI)</span>
+                      <strong id="energyBearingVal">64%</strong>
+                    </div>
+                    <div class="progress-bar-bg">
+                      <div class="progress-bar-fill" id="energyBearingBar" style="width: 64%; background: var(--accent-rose);"></div>
+                    </div>
+                  </div>
+
+                  <div class="energy-bar-row">
+                    <div class="energy-bar-label">
+                      <span>High Freq Resonance & Noise Floor</span>
+                      <strong id="energyNoiseVal">6%</strong>
+                    </div>
+                    <div class="progress-bar-bg">
+                      <div class="progress-bar-fill" id="energyNoiseBar" style="width: 6%; background: var(--text-dim);"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comprehensive Detected Spectral Peak Data Table -->
           <div class="card">
             <div class="card-header">
-              <h2 class="card-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                High-Resolution FFT Spectrum (0 - 500 Hz)
-              </h2>
+              <div class="card-header-left">
+                <h2 class="card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                  Comprehensive Detected Spectral Peak Diagnostics Table
+                </h2>
+                <div class="table-badge-summary" id="peakCountSummary">4 Active Peaks Detected</div>
+              </div>
+
+              <div class="table-filter-group">
+                <button class="table-filter-btn active" data-filter="all">All Peaks</button>
+                <button class="table-filter-btn" data-filter="faults">Faults Only</button>
+                <button class="table-filter-btn" data-filter="harmonics">Harmonics</button>
+              </div>
             </div>
-            <div class="fft-container" style="height: 380px;">
-              <canvas id="fftCanvasPage"></canvas>
+
+            <div class="peak-table-container">
+              <table class="peak-table">
+                <thead>
+                  <tr>
+                    <th>Frequency (Hz)</th>
+                    <th>Amplitude (g pk)</th>
+                    <th>Velocity (mm/s)</th>
+                    <th>Harmonic Order</th>
+                    <th>Diagnostic Fault Association</th>
+                    <th>ISO 10816 Severity</th>
+                    <th>Confidence</th>
+                    <th>Recommended Action</th>
+                  </tr>
+                </thead>
+                <tbody id="peakDataTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

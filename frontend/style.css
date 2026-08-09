@@ -496,6 +496,30 @@ body {
   border-color: var(--accent-purple);
 }
 
+/* Frequency Range Filter Pills */
+.range-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.range-pill {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.775rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.range-pill.active, .range-pill:hover {
+  background: rgba(6, 182, 212, 0.2);
+  color: #fff;
+  border-color: var(--accent-cyan);
+}
+
 /* Fleet Machine Grid */
 .fleet-grid {
   display: grid;
@@ -720,7 +744,7 @@ body {
   gap: 10px;
 }
 
-/* FFT Spectrum Canvas Container */
+/* FFT & Waveform Canvas Containers */
 .fft-container {
   width: 100%;
   height: 270px;
@@ -731,16 +755,295 @@ body {
   padding: 10px;
 }
 
-#fftCanvas {
+.fft-canvas-wrapper {
+  width: 100%;
+  height: 340px;
+  position: relative;
+  background: rgba(6, 9, 19, 0.9);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+.waveform-container {
+  width: 100%;
+  height: 200px;
+  position: relative;
+  background: rgba(6, 9, 19, 0.85);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px;
+}
+
+#fftCanvas, #fftCanvasPage, #waveformCanvasPage, #waterfallCanvasPage {
   width: 100%;
   height: 100%;
+  display: block;
+}
+
+/* Header Actions & Tools */
+.header-action-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-tool {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.btn-tool:hover {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: var(--accent-cyan);
+  color: #22d3ee;
+  transform: translateY(-1px);
+}
+
+/* Diagnostics Toolbar */
+.diag-toolbar {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.diag-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.diag-toolbar-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Audio Stethoscope Controls */
+.audio-stethoscope-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(10, 15, 30, 0.8);
+  padding: 6px 14px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+}
+
+.btn-audio-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  transition: var(--transition);
+}
+
+.btn-audio-toggle:hover {
+  color: var(--text-main);
+}
+
+.btn-audio-toggle.active {
+  color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.15);
+}
+
+.audio-volume-slider-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.audio-volume-slider-wrap input[type="range"] {
+  width: 70px;
+  height: 4px;
+  accent-color: var(--accent-cyan);
+  cursor: pointer;
+}
+
+.audio-pulse-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  transition: var(--transition);
+}
+
+.audio-pulse-indicator.active {
+  background: var(--accent-cyan);
+  box-shadow: 0 0 10px var(--accent-cyan);
+  animation: pulse-audio 1.2s infinite ease-in-out;
+}
+
+@keyframes pulse-audio {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+
+/* Signal 7-KPI Grid */
+.signal-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.kpi-subtext {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 4px;
+}
+
+/* Spectrum Main & Waterfall Grid */
+.spectrum-analytics-grid {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.card-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.spectrum-hud-badge {
+  font-size: 0.75rem;
+  color: #38bdf8;
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(6, 182, 212, 0.1);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  display: inline-block;
+}
+
+.spectrum-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.toggle-pill-group {
+  display: flex;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+
+.toggle-pill {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.toggle-pill.active {
+  background: var(--accent-cyan);
+  color: #060913;
+  font-weight: 700;
+}
+
+.select-wrapper-compact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.select-wrapper-compact select {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Crosshair Tooltip */
+.canvas-crosshair-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(8, 12, 22, 0.95);
+  border: 1px solid var(--accent-cyan);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: #f8fafc;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  z-index: 20;
+  display: none;
+  white-space: nowrap;
+}
+
+.fft-legend-bar {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.legend-filter-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
 }
 
 .fft-legend {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 12px;
+  gap: 14px;
   font-size: 0.775rem;
   color: var(--text-muted);
   flex-wrap: wrap;
@@ -750,12 +1053,380 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.legend-tag:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-color);
 }
 
 .legend-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
+}
+
+/* Waterfall Spectrogram Styles */
+.waterfall-badge {
+  font-size: 0.75rem;
+  color: var(--accent-purple);
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(139, 92, 246, 0.12);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
+.waterfall-canvas-container {
+  width: 100%;
+  height: 340px;
+  position: relative;
+  background: rgba(6, 9, 19, 0.95);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.waterfall-colorbar-row {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.colorbar-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.waterfall-gradient-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #050814 0%, #06b6d4 30%, #10b981 60%, #f59e0b 85%, #ef4444 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.colorbar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Waveform & Bearing Kinematics Row */
+.waveform-bearing-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.waveform-hud-metric {
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted);
+}
+
+.waveform-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.timebase-pills {
+  display: flex;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+
+.timebase-pill {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.725rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.timebase-pill.active {
+  background: var(--accent-purple);
+  color: #ffffff;
+}
+
+.btn-icon-toggle {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.btn-icon-toggle:hover {
+  color: var(--text-main);
+  border-color: var(--accent-cyan);
+}
+
+.btn-icon-toggle.frozen {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: var(--accent-rose);
+  color: #f87171;
+}
+
+.waveform-footer-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.725rem;
+  color: var(--text-dim);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wf-info-item {
+  display: flex;
+  gap: 6px;
+}
+
+.wf-info-label {
+  font-weight: 600;
+}
+
+.wf-info-val {
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Bearing Kinematics Grid */
+.bearing-kinematics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.bearing-freq-box {
+  background: rgba(10, 15, 30, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: var(--transition);
+}
+
+.bearing-freq-box:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.bearing-freq-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bearing-freq-code {
+  font-size: 1rem;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-cyan);
+}
+
+#boxBpfo .bearing-freq-code { color: var(--accent-rose); }
+#boxBpfi .bearing-freq-code { color: var(--accent-amber); }
+#boxBsf .bearing-freq-code { color: #ec4899; }
+#boxFtf .bearing-freq-code { color: var(--accent-emerald); }
+
+.status-pill-mini {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.status-pill-mini.healthy {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-pill-mini.fault {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.bearing-freq-name {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.bearing-freq-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-main);
+}
+
+.bearing-freq-order {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.bearing-freq-formula {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 4px;
+}
+
+/* Fault Energy Breakdown Section */
+.fault-energy-matrix-section {
+  background: rgba(10, 15, 30, 0.5);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.matrix-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.energy-bars-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.energy-bar-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.energy-bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.energy-bar-label strong {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-main);
+}
+
+/* Spectral Peak Table Header Controls & Badges */
+.table-badge-summary {
+  font-size: 0.75rem;
+  color: var(--accent-emerald);
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.table-filter-group {
+  display: flex;
+  gap: 6px;
+}
+
+.table-filter-btn {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.table-filter-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.table-filter-btn.active {
+  background: rgba(6, 182, 212, 0.2);
+  color: #22d3ee;
+  border-color: var(--accent-cyan);
+}
+
+/* Severity Badges in Table */
+.badge-sev-normal {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-sev-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-sev-crit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
 /* ML Card */
@@ -872,18 +1543,28 @@ body {
 }
 
 /* Responsive */
+@media (max-width: 1400px) {
+  .signal-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  .spectrum-analytics-grid { grid-template-columns: 1fr; }
+  .waveform-bearing-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 1024px) {
   .fleet-kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .fleet-grid { grid-template-columns: 1fr; }
   .telemetry-grid { grid-template-columns: repeat(2, 1fr); }
   .main-dashboard-grid { grid-template-columns: 1fr; }
+  .signal-kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
   .sidebar { position: fixed; left: -270px; height: 100vh; }
   .fleet-kpi-grid { grid-template-columns: 1fr; }
   .telemetry-grid { grid-template-columns: 1fr; }
+  .signal-kpi-grid { grid-template-columns: 1fr; }
+  .bearing-kinematics-grid { grid-template-columns: 1fr; }
   .state-toolbar { flex-direction: column; align-items: flex-start; }
   .top-header { padding: 0 16px; }
   .dashboard-body { padding: 16px; }
 }
+
