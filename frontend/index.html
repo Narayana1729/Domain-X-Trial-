@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain-X — Master Industrial IoT Predictive Maintenance Dashboard</title>
+  <meta name="description" content="Domain-X Master Dashboard for Industrial IoT rotating machinery monitoring RPM, Temperature, Vibration FFT, ML Fault Classification, and GenAI Technician Guidance.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation with Component Page Routing -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand">
+          <div class="brand-icon">X</div>
+          <div>
+            <span class="brand-title">Domain-X</span>
+            <span class="brand-tag">MASTER</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="machine-selector-box">
+            <label for="machineSelect">Active Machine Focus</label>
+            <select id="machineSelect">
+              <option value="m1">Induction Motor #01 (SKF 6208)</option>
+              <option value="m2">CNC Spindle Drive #04 (FAG 6310)</option>
+              <option value="m3">Cooling Water Pump P-102</option>
+              <option value="m4">Turbine Blower T-400</option>
+            </select>
+          </div>
+
+          <div class="nav-label">Component Views</div>
+          <ul class="nav-menu">
+            <li class="nav-item active" data-view="master">
+              <a href="#master">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                <span>Master Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item" data-view="fft">
+              <a href="#fft">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>FFT Spectrum View</span>
+              </a>
+            </li>
+            <li class="nav-item" data-view="technician">
+              <a href="#technician">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>GenAI Technician Guide</span>
+              </a>
+            </li>
+            <li class="nav-item" data-view="fleet">
+              <a href="#fleet">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span>Fleet Asset Overview</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="font-size: 0.75rem; color: var(--text-dim); text-align: center; border-top: 1px solid var(--border-color); padding-top: 16px;">
+        Domain-X Master Architecture<br>Sampling Rate: 10.24 kHz
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+      <!-- Top Header Bar -->
+      <header class="top-header">
+        <div class="machine-status-banner">
+          <div class="status-pill healthy" id="machineStatusPill">
+            <span class="status-pulse"></span>
+            <span id="machineStatusText">Healthy</span>
+          </div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);" id="activeMachineLabel">Induction Motor #01 — SKF 6208 2Z</span>
+        </div>
+
+        <div class="header-actions">
+          <div class="live-clock" id="liveClock">2026-08-09 18:38:00</div>
+        </div>
+      </header>
+
+      <!-- Dashboard Body with Component Pages -->
+      <div class="dashboard-body">
+        
+        <!-- COMPONENT VIEW 1: MASTER DASHBOARD -->
+        <div class="page-view active" id="viewMasterOverview">
+          <div class="page-title-row">
+            <div>
+              <h1 class="page-title">Domain-X Master Operational Dashboard</h1>
+              <p class="page-subtitle">Plant-wide predictive maintenance monitoring for high-speed industrial rotating machinery.</p>
+            </div>
+          </div>
+
+          <!-- Master KPI Fleet Stats -->
+          <div class="fleet-kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Monitored Assets</span>
+                <div class="kpi-icon cyan">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value">4</span>
+                <span class="kpi-unit">Units</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Plant Health Index</span>
+                <div class="kpi-icon emerald">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpiPlantHealth">92%</span>
+                <span class="kpi-unit">Optimal</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Active Fault Alerts</span>
+                <div class="kpi-icon rose">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpiActiveAlerts">0</span>
+                <span class="kpi-unit">Alerts</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">GenAI Guidance Tasks</span>
+                <div class="kpi-icon amber">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value">3</span>
+                <span class="kpi-unit">SOPs Ready</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Simulated Machine State Switcher -->
+          <div class="state-toolbar">
+            <div class="state-toolbar-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+              <span>Mock Machine State Simulator:</span>
+            </div>
+            <div class="state-buttons">
+              <button class="btn-state active" data-state="healthy">Healthy</button>
+              <button class="btn-state" data-state="bpfo">Bearing Outer Race Defect (BPFO)</button>
+              <button class="btn-state" data-state="imbalance">Rotor Imbalance (1x RPM)</button>
+              <button class="btn-state" data-state="misalignment">Shaft Misalignment (2x RPM)</button>
+            </div>
+          </div>
+
+          <!-- Monitored Unit Telemetry Grid -->
+          <div class="telemetry-grid">
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Rotational Speed</span>
+                <div class="metric-icon cyan">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-value" id="valRpm">1,785</span>
+                <span class="metric-unit">RPM</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="rpmBar" style="width: 59.5%;"></div>
+              </div>
+              <div class="metric-footer">
+                <span id="label1xFreq">1x = 29.8 Hz</span>
+                <span>Target: 1800</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Temperature</span>
+                <div class="metric-icon amber">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-value" id="valTemp">64.2</span>
+                <span class="metric-unit">°C</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="tempBar" style="width: 64.2%;"></div>
+              </div>
+              <div class="metric-footer">
+                <span id="tempStatusText" style="color:var(--accent-emerald);">Normal</span>
+                <span>Limit: 85°C</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Vibration RMS</span>
+                <div class="metric-icon purple">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-value" id="valVibRms">1.24</span>
+                <span class="metric-unit">mm/s</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="rmsBar" style="width: 15.5%;"></div>
+              </div>
+              <div class="metric-footer">
+                <span id="isoZoneText" style="color:var(--accent-emerald);">Zone A (Good)</span>
+                <span>ISO 10816</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Peak Acceleration</span>
+                <div class="metric-icon emerald">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-value" id="valPeakAmp">0.85</span>
+                <span class="metric-unit">g pk</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="peakBar" style="width: 17%;"></div>
+              </div>
+              <div class="metric-footer">
+                <span id="label2xFreq">2x = 59.5 Hz</span>
+                <span id="labelBpfoFreq">BPFO = 106.5 Hz</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Master Overview Grid: FFT Canvas & AI Diagnostic Breakdown -->
+          <div class="main-dashboard-grid">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  FFT Frequency Spectrum Preview
+                </h2>
+                <button class="btn-card-action btn-switch-view" data-target-view="fft">Expand Full FFT View</button>
+              </div>
+
+              <div class="fft-container">
+                <canvas id="fftCanvas"></canvas>
+              </div>
+
+              <div class="fft-legend">
+                <div class="legend-tag">
+                  <span class="legend-dot" style="background:#06b6d4;"></span>
+                  <span>1x RPM (29.8 Hz)</span>
+                </div>
+                <div class="legend-tag">
+                  <span class="legend-dot" style="background:#8b5cf6;"></span>
+                  <span>2x RPM (59.5 Hz)</span>
+                </div>
+                <div class="legend-tag">
+                  <span class="legend-dot" style="background:#ef4444;"></span>
+                  <span>BPFO (106.5 Hz)</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <!-- ML Diagnostic Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    ML Fault Classification
+                  </h2>
+                </div>
+
+                <div class="ml-card-box">
+                  <div class="ml-output-title">Machine Condition</div>
+                  <div class="ml-result-row">
+                    <span class="ml-diag-name" id="mlDiagnosticName">Healthy</span>
+                    <span class="ml-confidence-pill" id="mlConfidencePill">99.2% Confidence</span>
+                  </div>
+                  
+                  <div style="margin-top: 4px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">
+                      <span>Health Index</span>
+                      <strong style="color: var(--accent-emerald);" id="valHealthIndex">98%</strong>
+                    </div>
+                    <div class="progress-bar-bg" style="height: 8px;">
+                      <div class="progress-bar-fill" id="healthBar" style="width: 98%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- GenAI Technician Guidance Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    GenAI Repair Guidance
+                  </h2>
+                  <button class="btn-card-action btn-switch-view" data-target-view="technician">Open Full Technician Guide</button>
+                </div>
+
+                <div class="genai-box">
+                  <ol class="genai-steps-list" id="genAiStepsList">
+                    <!-- Populated dynamically -->
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPONENT VIEW 2: FFT SPECTRUM ANALYSIS -->
+        <div class="page-view" id="viewFftAnalysis">
+          <div class="page-title-row">
+            <div>
+              <h1 class="page-title">FFT Frequency Spectrum Analyzer Component</h1>
+              <p class="page-subtitle">Detailed harmonic peak decomposition and fault frequency spectral signature inspection.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                High-Resolution FFT Spectrum (0 - 500 Hz)
+              </h2>
+            </div>
+            <div class="fft-container" style="height: 380px;">
+              <canvas id="fftCanvasPage"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPONENT VIEW 3: GENAI TECHNICIAN REPAIR GUIDE -->
+        <div class="page-view" id="viewTechnicianGuide">
+          <div class="page-title-row">
+            <div>
+              <h1 class="page-title">GenAI Technician Repair Guide Component</h1>
+              <p class="page-subtitle">AI-assisted Standard Operating Procedures (SOP) & step-by-step repair instruction workflow.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Active Repair Operating Procedure
+              </h2>
+            </div>
+            <div class="genai-box" style="padding: 24px;">
+              <ol class="genai-steps-list" id="genAiStepsListFull">
+                <!-- Populated dynamically -->
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPONENT VIEW 4: FLEET ASSET OVERVIEW -->
+        <div class="page-view" id="viewFleetAssets">
+          <div class="page-title-row">
+            <div>
+              <h1 class="page-title">Plant Fleet Asset Management Component</h1>
+              <p class="page-subtitle">Overview of all active rotating equipment units across the facility.</p>
+            </div>
+          </div>
+
+          <div class="fleet-grid">
+            <div class="fleet-card selected" data-unit="m1">
+              <div class="fleet-card-header">
+                <span class="fleet-card-title">Induction Motor #01 (SKF 6208)</span>
+                <span class="status-pill healthy" style="padding: 3px 10px; font-size: 0.725rem;">Healthy</span>
+              </div>
+              <div class="fleet-metrics-row">
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">RPM</span>
+                  <span class="mini-metric-val">1,785</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">Temp</span>
+                  <span class="mini-metric-val">64.2°C</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">RMS</span>
+                  <span class="mini-metric-val">1.24mm/s</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">Health</span>
+                  <span class="mini-metric-val" style="color:var(--accent-emerald);">98%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fleet-card" data-unit="m2">
+              <div class="fleet-card-header">
+                <span class="fleet-card-title">CNC Spindle Drive #04 (FAG 6310)</span>
+                <span class="status-pill healthy" style="padding: 3px 10px; font-size: 0.725rem;">Healthy</span>
+              </div>
+              <div class="fleet-metrics-row">
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">RPM</span>
+                  <span class="mini-metric-val">2,950</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">Temp</span>
+                  <span class="mini-metric-val">58.6°C</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">RMS</span>
+                  <span class="mini-metric-val">1.45mm/s</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">Health</span>
+                  <span class="mini-metric-val" style="color:var(--accent-emerald);">96%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fleet-card" data-unit="m3">
+              <div class="fleet-card-header">
+                <span class="fleet-card-title">Cooling Water Pump P-102</span>
+                <span class="status-pill healthy" style="padding: 3px 10px; font-size: 0.725rem;">Healthy</span>
+              </div>
+              <div class="fleet-metrics-row">
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">RPM</span>
+                  <span class="mini-metric-val">1,450</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">Temp</span>
+                  <span class="mini-metric-val">61.0°C</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">RMS</span>
+                  <span class="mini-metric-val">1.82mm/s</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">Health</span>
+                  <span class="mini-metric-val" style="color:var(--accent-emerald);">91%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fleet-card" data-unit="m4">
+              <div class="fleet-card-header">
+                <span class="fleet-card-title">Turbine Blower T-400</span>
+                <span class="status-pill healthy" style="padding: 3px 10px; font-size: 0.725rem;">Healthy</span>
+              </div>
+              <div class="fleet-metrics-row">
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">RPM</span>
+                  <span class="mini-metric-val">3,600</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">Temp</span>
+                  <span class="mini-metric-val">68.4°C</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">RMS</span>
+                  <span class="mini-metric-val">2.10mm/s</span>
+                </div>
+                <div class="mini-metric-item">
+                  <span class="mini-metric-label">Health</span>
+                  <span class="mini-metric-val" style="color:var(--accent-emerald);">89%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API Connection Readiness Footer -->
+        <div class="api-readiness-bar">
+          <div>
+            <span class="api-status-dot"></span>
+            <strong>DomainXAPI Adapter Status:</strong> <span style="color:#22d3ee;" id="apiAdapterStatus">MOCK_MODE (Simulated Engine Active)</span>
+          </div>
+          <span style="font-size: 0.775rem;">Backend Connection Ready: WebSocket (`ws://localhost:8080/api/telemetry`) & ESP32 payload supported</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
