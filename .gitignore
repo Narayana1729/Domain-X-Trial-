@@ -1,0 +1,11 @@
+# Dependencies & Build
+node_modules
+.next/
+dist/
+.DS_Store
+__pycache__/
+
+# Exclude data as requested
+data/
+*.csv
+*.mat
