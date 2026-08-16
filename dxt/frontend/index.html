@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Domain-X — FFT Spectrum & Signal Diagnostics</title>
+  <meta name="description" content="Domain-X FFT Spectrum & Signal Diagnostics page featuring real-time spectral peak analysis, acceleration time-domain waveform, crest factor metrics, and harmonic classification.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation with Component Page Routing -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand">
+          <div class="brand-icon">X</div>
+          <div>
+            <span class="brand-title">Domain-X</span>
+            <span class="brand-tag">SIGNAL</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="machine-selector-box">
+            <label for="machineSelect">Active Machine Focus</label>
+            <select id="machineSelect">
+              <option value="m1">Induction Motor #01 (SKF 6208)</option>
+              <option value="m2">CNC Spindle Drive #04 (FAG 6310)</option>
+              <option value="m3">Cooling Water Pump P-102</option>
+              <option value="m4">Turbine Blower T-400</option>
+            </select>
+          </div>
+
+          <div class="nav-label">Component Views</div>
+          <ul class="nav-menu">
+            <li class="nav-item" data-view="master">
+              <a href="#master">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+                <span>Master Dashboard</span>
+              </a>
+            </li>
+            <li class="nav-item active" data-view="fft">
+              <a href="#fft">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>FFT Spectrum View</span>
+              </a>
+            </li>
+            <li class="nav-item" data-view="technician">
+              <a href="#technician">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>GenAI Technician Guide</span>
+              </a>
+            </li>
+            <li class="nav-item" data-view="fleet">
+              <a href="#fleet">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span>Fleet Asset Overview</span>
+              </a>
+            </li>
+            <li class="nav-item" data-view="field">
+              <a href="#field">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                <span>Field Technician (Mobile)</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- System Architecture & Diagnostic States -->
+        <div class="nav-section">
+          <div class="nav-label">Diagnostic State Simulator</div>
+          <div class="state-btn-group">
+            <button class="btn-state active" data-state="healthy">
+              <span class="state-dot healthy"></span>
+              <span>Healthy Base</span>
+            </button>
+            <button class="btn-state" data-state="bpfo">
+              <span class="state-dot bpfo"></span>
+              <span>BPFO Defect</span>
+            </button>
+            <button class="btn-state" data-state="imbalance">
+              <span class="state-dot imbalance"></span>
+              <span>1X Imbalance</span>
+            </button>
+            <button class="btn-state" data-state="misalignment">
+              <span class="state-dot misalignment"></span>
+              <span>2X Misaligned</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size: 0.75rem; color: var(--text-dim); text-align: center; border-top: 1px solid var(--border-color); padding-top: 16px;">
+        FFT Signal Engine: Active<br>Sampling Rate: 10.24 kHz
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <main class="main-wrapper">
+      <!-- Top Header Bar -->
+      <header class="top-header">
+        <div class="machine-status-banner">
+          <div class="status-pill healthy" id="machineStatusPill">
+            <span class="status-pulse"></span>
+            <span id="machineStatusText">Healthy</span>
+          </div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);" id="activeMachineLabel">Induction Motor #01 — SKF 6208 2Z</span>
+        </div>
+
+        <div class="header-actions">
+          <button class="btn-tool" id="btnToggleFieldMode" title="Switch to Mobile Field Technician Interface" style="color:var(--accent-cyan); border-color:rgba(6,182,212,0.4);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span>Field Tech Mode</span>
+          </button>
+          <button class="btn-copilot-launch" id="btnOpenCopilotModal" title="Open AI Technician Copilot">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12A10 10 0 0 1 12 2z"/><path d="m9 12 2 2 4-4"/><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>AI Technician Copilot</span>
+            <span class="copilot-pulse-dot"></span>
+          </button>
+          <div class="live-clock" id="liveClock">2026-08-09 18:42:00</div>
+        </div>
+      </header>
+
+      <!-- Dashboard Body -->
+      <div class="dashboard-body">
+        
+        <!-- COMPONENT VIEW 1: MASTER DASHBOARD -->
+        <div class="page-view" id="viewMasterOverview">
+          <div class="page-title-row">
+            <div>
+              <h1 class="page-title">Domain-X Master Operational Dashboard</h1>
+              <p class="page-subtitle">Plant-wide predictive maintenance monitoring for high-speed industrial rotating machinery.</p>
+            </div>
+          </div>
+
+          <!-- Master KPI Fleet Stats -->
+          <div class="fleet-kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Monitored Assets</span>
+                <div class="kpi-icon cyan">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value">4</span>
+                <span class="kpi-unit">Units</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Plant Health Index</span>
+                <div class="kpi-icon emerald">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpiPlantHealth">92%</span>
+                <span class="kpi-unit">Optimal</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Active Fault Alerts</span>
+                <div class="kpi-icon rose">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="kpiActiveAlerts">0</span>
+                <span class="kpi-unit">Alerts</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">GenAI Guidance Tasks</span>
+                <div class="kpi-icon amber">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value">3</span>
+                <span class="kpi-unit">SOPs Ready</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Machine State Switcher -->
+          <div class="state-toolbar">
+            <div class="state-toolbar-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+              <span>Mock Machine State Simulator:</span>
+            </div>
+            <div class="state-buttons">
+              <button class="btn-state active" data-state="healthy">Healthy</button>
+              <button class="btn-state" data-state="bpfo">Bearing Outer Race Defect (BPFO)</button>
+              <button class="btn-state" data-state="imbalance">Rotor Imbalance (1x RPM)</button>
+              <button class="btn-state" data-state="misalignment">Shaft Misalignment (2x RPM)</button>
+            </div>
+          </div>
+
+          <!-- Monitored Unit Telemetry Grid -->
+          <div class="telemetry-grid">
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Rotational Speed</span>
+                <div class="metric-icon cyan">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-value" id="valRpm">1,785</span>
+                <span class="metric-unit">RPM</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="rpmBar" style="width: 59.5%;"></div>
+              </div>
+              <div class="metric-footer">
+                <span id="label1xFreq">1x = 29.8 Hz</span>
+                <span>Target: 1800</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Temperature</span>
+                <div class="metric-icon amber">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-value" id="valTemp">64.2</span>
+                <span class="metric-unit">°C</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="tempBar" style="width: 64.2%;"></div>
+              </div>
+              <div class="metric-footer">
+                <span id="tempStatusText" style="color:var(--accent-emerald);">Normal</span>
+                <span>Limit: 85°C</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Vibration RMS</span>
+                <div class="metric-icon purple">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-value" id="valVibRms">1.24</span>
+                <span class="metric-unit">mm/s</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="rmsBar" style="width: 15.5%;"></div>
+              </div>
+              <div class="metric-footer">
+                <span id="isoZoneText" style="color:var(--accent-emerald);">Zone A (Good)</span>
+                <span>ISO 10816</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Peak Acceleration</span>
+                <div class="metric-icon emerald">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+              </div>
+              <div class="metric-value-row">
+                <span class="metric-value" id="valPeakAmp">0.85</span>
+                <span class="metric-unit">g pk</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="peakBar" style="width: 17%;"></div>
+              </div>
+              <div class="metric-footer">
+                <span id="label2xFreq">2x = 59.5 Hz</span>
+                <span id="labelBpfoFreq">BPFO = 106.5 Hz</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Master Overview Grid: FFT Canvas & AI Diagnostic Breakdown -->
+          <div class="main-dashboard-grid">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  FFT Frequency Spectrum Preview
+                </h2>
+                <button class="btn-card-action btn-switch-view" data-target-view="fft">Expand Full FFT View</button>
+              </div>
+
+              <div class="fft-container">
+                <canvas id="fftCanvas"></canvas>
+              </div>
+
+              <div class="fft-legend">
+                <div class="legend-tag">
+                  <span class="legend-dot" style="background:#06b6d4;"></span>
+                  <span>1x RPM (29.8 Hz)</span>
+                </div>
+                <div class="legend-tag">
+                  <span class="legend-dot" style="background:#8b5cf6;"></span>
+                  <span>2x RPM (59.5 Hz)</span>
+                </div>
+                <div class="legend-tag">
+                  <span class="legend-dot" style="background:#ef4444;"></span>
+                  <span>BPFO (106.5 Hz)</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    ML Fault Classification
+                  </h2>
+                </div>
+
+                <div class="ml-card-box">
+                  <div class="ml-output-title">Machine Condition</div>
+                  <div class="ml-result-row">
+                    <span class="ml-diag-name" id="mlDiagnosticName">Healthy</span>
+                    <span class="ml-confidence-pill" id="mlConfidencePill">99.2% Confidence</span>
+                  </div>
+                  
+                  <div style="margin-top: 4px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">
+                      <span>Health Index</span>
+                      <strong style="color: var(--accent-emerald);" id="valHealthIndex">98%</strong>
+                    </div>
+                    <div class="progress-bar-bg" style="height: 8px;">
+                      <div class="progress-bar-fill" id="healthBar" style="width: 98%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    GenAI Repair Guidance
+                  </h2>
+                  <button class="btn-card-action btn-switch-view" data-target-view="technician">Open Full Technician Guide</button>
+                </div>
+
+                <div class="genai-box">
+                  <ol class="genai-steps-list" id="genAiStepsList">
+                    <!-- Populated dynamically -->
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPONENT VIEW 2: FFT SPECTRUM & SIGNAL DIAGNOSTICS PAGE -->
+        <div class="page-view" id="viewFftAnalysis">
+          <div class="page-title-row">
+            <div>
+              <h1 class="page-title">FFT Spectrum & Signal Diagnostics</h1>
+              <p class="page-subtitle">Real-time spectral decomposition, raw acceleration waveform $a(t)$, envelope demodulation, bearing characteristic frequencies, and harmonic peak tracking.</p>
+            </div>
+            <div class="header-action-group">
+              <button class="btn-tool" id="btnExportSpectrumPng" title="Export Spectrum Image">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>Export Spectrum (PNG)</span>
+              </button>
+              <button class="btn-tool" id="btnExportPeakCsv" title="Export Spectral Peaks to CSV">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Export Peaks (CSV)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Diagnostics Action & State Toolbar -->
+          <div class="diag-toolbar">
+            <div class="diag-toolbar-left">
+              <span class="diag-toolbar-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Signal Presets:
+              </span>
+              <div class="state-buttons">
+                <button class="btn-state active" data-state="healthy">Clean Baseline</button>
+                <button class="btn-state" data-state="bpfo">Bearing Outer Race (BPFO)</button>
+                <button class="btn-state" data-state="imbalance">Rotor Unbalance (1X)</button>
+                <button class="btn-state" data-state="misalignment">Shaft Misalignment (2X)</button>
+              </div>
+            </div>
+
+            <!-- Audio Stethoscope Synthesizer (Web Audio API) -->
+            <div class="audio-stethoscope-box">
+              <button class="btn-audio-toggle" id="btnAudioToggle" title="Toggle Acoustic Stethoscope Sound Synthesizer">
+                <svg id="audioIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <span id="audioBtnText">Acoustic Stethoscope</span>
+              </button>
+              <div class="audio-volume-slider-wrap">
+                <input type="range" id="audioVolumeSlider" min="0" max="100" value="35" title="Acoustic Stethoscope Volume">
+              </div>
+              <span class="audio-pulse-indicator" id="audioPulseIndicator" title="Acoustic Synth Inactive"></span>
+            </div>
+          </div>
+
+          <!-- Signal Diagnostics KPI Summary Cards (7 Metrics) -->
+          <div class="signal-kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Sampling Rate</span>
+                <div class="kpi-icon cyan">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value">10.24</span>
+                <span class="kpi-unit">kHz</span>
+              </div>
+              <div class="kpi-subtext">Nyquist: 5.12 kHz</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">FFT Resolution</span>
+                <div class="kpi-icon purple">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value">0.50</span>
+                <span class="kpi-unit">Hz</span>
+              </div>
+              <div class="kpi-subtext">Block: 4096 / N=8192</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Crest Factor (CF)</span>
+                <div class="kpi-icon amber">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="valCrestFactor">3.42</span>
+                <span class="kpi-unit">Ratio</span>
+              </div>
+              <div class="kpi-subtext" id="crestFactorStatus" style="color:var(--accent-emerald);">Nominal &lt; 3.5</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Kurtosis (Impulsiveness)</span>
+                <div class="kpi-icon rose">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="valKurtosis">2.95</span>
+                <span class="kpi-unit">β₂</span>
+              </div>
+              <div class="kpi-subtext" id="kurtosisStatus" style="color:var(--accent-emerald);">Gaussian / Normal</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Velocity RMS</span>
+                <div class="kpi-icon emerald">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="valSignalVibRms">1.24</span>
+                <span class="kpi-unit">mm/s</span>
+              </div>
+              <div class="kpi-subtext" id="signalIsoZone" style="color:var(--accent-emerald);">ISO 10816 Zone A</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Peak-to-Peak (pk-pk)</span>
+                <div class="kpi-icon indigo">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="valPkToPkG">2.48</span>
+                <span class="kpi-unit">g pk-pk</span>
+              </div>
+              <div class="kpi-subtext" id="labelPkAmp">Peak: 0.85 g</div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Dominant Peak</span>
+                <div class="kpi-icon cyan">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" id="valDominantPeakFreq">29.8</span>
+                <span class="kpi-unit">Hz</span>
+              </div>
+              <div class="kpi-subtext" id="dominantPeakFaultLabel" style="color:var(--accent-cyan);">1X Running Speed</div>
+            </div>
+          </div>
+
+          <!-- Spectrum & Waterfall Grid -->
+          <div class="spectrum-analytics-grid">
+            <!-- Main High-Resolution FFT Spectrum Card -->
+            <div class="card spectrum-main-card">
+              <div class="card-header">
+                <div class="card-header-left">
+                  <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    FFT Frequency Spectrum Analyzer
+                  </h2>
+                  <div class="spectrum-hud-badge" id="spectrumHud">Cursor: Hover over spectrum for crosshair telemetry</div>
+                </div>
+
+                <div class="spectrum-controls-group">
+                  <!-- Scale Mode: Linear vs dB Log -->
+                  <div class="toggle-pill-group">
+                    <button class="toggle-pill active" id="btnScaleLin" data-scale="lin">Lin (g)</button>
+                    <button class="toggle-pill" id="btnScaleDb" data-scale="db">Log (dB)</button>
+                  </div>
+
+                  <!-- Windowing Function -->
+                  <div class="select-wrapper-compact">
+                    <label for="selectWindowing">Window:</label>
+                    <select id="selectWindowing">
+                      <option value="hanning">Hanning</option>
+                      <option value="hamming">Hamming</option>
+                      <option value="flattop">Flat-Top</option>
+                      <option value="blackman">Blackman</option>
+                      <option value="rectangular">Uniform / Rect</option>
+                    </select>
+                  </div>
+
+                  <!-- Frequency Range Bandwidth -->
+                  <div class="range-pills">
+                    <button class="range-pill active" data-range="500">0 - 500 Hz</button>
+                    <button class="range-pill" data-range="1000">0 - 1000 Hz</button>
+                    <button class="range-pill" data-range="2000">0 - 2000 Hz</button>
+                    <button class="range-pill" data-range="5000">0 - 5000 Hz</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="fft-canvas-wrapper" id="fftCanvasWrapper">
+                <canvas id="fftCanvasPage"></canvas>
+                <div class="canvas-crosshair-tooltip" id="canvasCrosshairTooltip"></div>
+              </div>
+
+              <!-- Spectrum Fault Legend & Marker Filters -->
+              <div class="fft-legend-bar">
+                <div class="legend-filter-label">Active Harmonic & Defect Markers:</div>
+                <div class="fft-legend">
+                  <div class="legend-tag active" data-marker="1x" id="markerTag1x">
+                    <span class="legend-dot" style="background:#06b6d4;"></span>
+                    <span id="legend1xText">1X Running Speed (29.8 Hz)</span>
+                  </div>
+                  <div class="legend-tag active" data-marker="2x" id="markerTag2x">
+                    <span class="legend-dot" style="background:#8b5cf6;"></span>
+                    <span id="legend2xText">2X Harmonics (59.5 Hz)</span>
+                  </div>
+                  <div class="legend-tag active" data-marker="bpfo" id="markerTagBpfo">
+                    <span class="legend-dot" style="background:#ef4444;"></span>
+                    <span id="legendBpfoText">BPFO Outer Race (106.5 Hz)</span>
+                  </div>
+                  <div class="legend-tag active" data-marker="bpfi" id="markerTagBpfi">
+                    <span class="legend-dot" style="background:#f59e0b;"></span>
+                    <span id="legendBpfiText">BPFI Inner Race (161.4 Hz)</span>
+                  </div>
+                  <div class="legend-tag active" data-marker="bsf" id="markerTagBsf">
+                    <span class="legend-dot" style="background:#ec4899;"></span>
+                    <span id="legendBsfText">BSF Ball Spin (71.2 Hz)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Spectral Waterfall / Spectrogram History Card -->
+            <div class="card waterfall-card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                  Time-Frequency Waterfall Spectrogram
+                </h2>
+                <div class="waterfall-badge">Cascading 30s Spectral History</div>
+              </div>
+              <div class="waterfall-canvas-container">
+                <canvas id="waterfallCanvasPage"></canvas>
+              </div>
+              <div class="waterfall-colorbar-row">
+                <span class="colorbar-label">Spectral Energy Density:</span>
+                <div class="waterfall-gradient-bar"></div>
+                <div class="colorbar-labels">
+                  <span>-60 dB (Noise Floor)</span>
+                  <span>-30 dB</span>
+                  <span>-10 dB</span>
+                  <span>0 dB (Peak Fault)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time-Domain Waveform & Bearing Kinematics Row -->
+          <div class="waveform-bearing-grid">
+            <!-- Raw Time-Domain Acceleration Waveform a(t) & Envelope Demodulation Card -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-header-left">
+                  <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2.5"><path d="M2 12h5l3 8 4-16 4 16 3-8h5"/></svg>
+                    Time-Domain Vibration Waveform
+                  </h2>
+                  <span class="waveform-hud-metric" id="valPeakToPeak">Pk-Pk: 2.48 g | RMS: 0.88 g</span>
+                </div>
+
+                <div class="waveform-controls">
+                  <!-- Raw vs Hilbert Envelope Demodulation Mode -->
+                  <div class="toggle-pill-group">
+                    <button class="toggle-pill active" id="btnWaveformRaw" data-trace="raw">Raw a(t)</button>
+                    <button class="toggle-pill" id="btnWaveformEnv" data-trace="envelope">Envelope Demodulation</button>
+                  </div>
+
+                  <!-- Timebase Scale -->
+                  <div class="timebase-pills">
+                    <button class="timebase-pill active" data-timebase="20">20 ms/div</button>
+                    <button class="timebase-pill" data-timebase="50">50 ms/div</button>
+                    <button class="timebase-pill" data-timebase="100">100 ms/div</button>
+                  </div>
+
+                  <!-- Freeze / Live Toggle -->
+                  <button class="btn-icon-toggle" id="btnFreezeWaveform" title="Freeze / Pause Waveform Stream">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                    <span id="freezeBtnText">Freeze</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="waveform-container">
+                <canvas id="waveformCanvasPage"></canvas>
+              </div>
+
+              <div class="waveform-footer-info">
+                <div class="wf-info-item">
+                  <span class="wf-info-label">Signal Source:</span>
+                  <span class="wf-info-val">PCB Piezotronics 603C01 Piezoelectric Accelerometer</span>
+                </div>
+                <div class="wf-info-item">
+                  <span class="wf-info-label">Impact Repetition Period:</span>
+                  <span class="wf-info-val" id="wfImpactPeriod">T_bpfo = 9.39 ms (106.5 Hz)</span>
+                </div>
+                <div class="wf-info-item">
+                  <span class="wf-info-label">Envelope Demod Band:</span>
+                  <span class="wf-info-val">Bandpass 2.0 kHz - 10.0 kHz + Hilbert Transform</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bearing Kinematics & Fault Frequency Calculator Card -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-amber)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="4.93" y1="4.93" x2="9.17" y2="9.17"/><line x1="14.83" y1="14.83" x2="19.07" y2="19.07"/><line x1="14.83" y1="9.17" x2="19.07" y2="4.93"/><line x1="4.93" y1="19.07" x2="9.17" y2="14.83"/></svg>
+                  Bearing Kinematics & Defect Frequency Calculator
+                </h2>
+                <div class="select-wrapper-compact">
+                  <label for="selectBearingModel">Model:</label>
+                  <select id="selectBearingModel">
+                    <option value="skf6208">SKF 6208 Deep Groove (Nb=8, Dp=60mm, d=12mm)</option>
+                    <option value="fag6310">FAG 6310 Heavy Duty (Nb=8, Dp=80mm, d=19mm)</option>
+                    <option value="nsk6205">NSK 6205 Standard (Nb=9, Dp=38.5mm, d=7.94mm)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="bearing-kinematics-grid">
+                <div class="bearing-freq-box" id="boxBpfo">
+                  <div class="bearing-freq-header">
+                    <span class="bearing-freq-code">BPFO</span>
+                    <span class="status-pill-mini fault" id="badgeBpfoStatus">Monitored</span>
+                  </div>
+                  <div class="bearing-freq-name">Outer Race Ball Pass</div>
+                  <div class="bearing-freq-value" id="valCalcBpfo">106.5 Hz</div>
+                  <div class="bearing-freq-order" id="orderBpfo">3.57X RPM</div>
+                  <div class="bearing-freq-formula">f_bpfo = (N_b/2)·f_r·(1 - (d/D_p)cosα)</div>
+                </div>
+
+                <div class="bearing-freq-box" id="boxBpfi">
+                  <div class="bearing-freq-header">
+                    <span class="bearing-freq-code">BPFI</span>
+                    <span class="status-pill-mini healthy" id="badgeBpfiStatus">Monitored</span>
+                  </div>
+                  <div class="bearing-freq-name">Inner Race Ball Pass</div>
+                  <div class="bearing-freq-value" id="valCalcBpfi">161.4 Hz</div>
+                  <div class="bearing-freq-order" id="orderBpfi">5.43X RPM</div>
+                  <div class="bearing-freq-formula">f_bpfi = (N_b/2)·f_r·(1 + (d/D_p)cosα)</div>
+                </div>
+
+                <div class="bearing-freq-box" id="boxBsf">
+                  <div class="bearing-freq-header">
+                    <span class="bearing-freq-code">BSF</span>
+                    <span class="status-pill-mini healthy" id="badgeBsfStatus">Monitored</span>
+                  </div>
+                  <div class="bearing-freq-name">Ball Spin Frequency</div>
+                  <div class="bearing-freq-value" id="valCalcBsf">71.2 Hz</div>
+                  <div class="bearing-freq-order" id="orderBsf">2.39X RPM</div>
+                  <div class="bearing-freq-formula">f_bsf = (D_p/2d)·f_r·(1 - ((d/D_p)cosα)²)</div>
+                </div>
+
+                <div class="bearing-freq-box" id="boxFtf">
+                  <div class="bearing-freq-header">
+                    <span class="bearing-freq-code">FTF</span>
+                    <span class="status-pill-mini healthy" id="badgeFtfStatus">Monitored</span>
+                  </div>
+                  <div class="bearing-freq-name">Fundamental Train (Cage)</div>
+                  <div class="bearing-freq-value" id="valCalcFtf">11.9 Hz</div>
+                  <div class="bearing-freq-order" id="orderFtf">0.40X RPM</div>
+                  <div class="bearing-freq-formula">f_ftf = 0.5·f_r·(1 - (d/D_p)cosα)</div>
+                </div>
+              </div>
+
+              <!-- Energy Distribution Breakdown -->
+              <div class="fault-energy-matrix-section">
+                <div class="matrix-section-title">Harmonic & Spectral Energy Distribution</div>
+                <div class="energy-bars-container">
+                  <div class="energy-bar-row">
+                    <div class="energy-bar-label">
+                      <span>1X Mass Unbalance</span>
+                      <strong id="energy1xVal">18%</strong>
+                    </div>
+                    <div class="progress-bar-bg">
+                      <div class="progress-bar-fill" id="energy1xBar" style="width: 18%; background: var(--accent-cyan);"></div>
+                    </div>
+                  </div>
+
+                  <div class="energy-bar-row">
+                    <div class="energy-bar-label">
+                      <span>2X-4X Misalignment / Looseness</span>
+                      <strong id="energy2xVal">12%</strong>
+                    </div>
+                    <div class="progress-bar-bg">
+                      <div class="progress-bar-fill" id="energy2xBar" style="width: 12%; background: var(--accent-purple);"></div>
+                    </div>
+                  </div>
+
+                  <div class="energy-bar-row">
+                    <div class="energy-bar-label">
+                      <span>Bearing Defect Band (BPFO/BPFI)</span>
+                      <strong id="energyBearingVal">64%</strong>
+                    </div>
+                    <div class="progress-bar-bg">
+                      <div class="progress-bar-fill" id="energyBearingBar" style="width: 64%; background: var(--accent-rose);"></div>
+                    </div>
+                  </div>
+
+                  <div class="energy-bar-row">
+                    <div class="energy-bar-label">
+                      <span>High Freq Resonance & Noise Floor</span>
+                      <strong id="energyNoiseVal">6%</strong>
+                    </div>
+                    <div class="progress-bar-bg">
+                      <div class="progress-bar-fill" id="energyNoiseBar" style="width: 6%; background: var(--text-dim);"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comprehensive Detected Spectral Peak Data Table -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-header-left">
+                <h2 class="card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                  Comprehensive Detected Spectral Peak Diagnostics Table
+                </h2>
+                <div class="table-badge-summary" id="peakCountSummary">4 Active Peaks Detected</div>
+              </div>
+
+              <div class="table-filter-group">
+                <button class="table-filter-btn active" data-filter="all">All Peaks</button>
+                <button class="table-filter-btn" data-filter="faults">Faults Only</button>
+                <button class="table-filter-btn" data-filter="harmonics">Harmonics</button>
+              </div>
+            </div>
+
+            <div class="peak-table-container">
+              <table class="peak-table">
+                <thead>
+                  <tr>
+                    <th>Frequency (Hz)</th>
+                    <th>Amplitude (g pk)</th>
+                    <th>Velocity (mm/s)</th>
+                    <th>Harmonic Order</th>
+                    <th>Diagnostic Fault Association</th>
+                    <th>ISO 10816 Severity</th>
+                    <th>Confidence</th>
+                    <th>Recommended Action</th>
+                  </tr>
+                </thead>
+                <tbody id="peakDataTableBody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPONENT VIEW 3: GENAI TECHNICIAN REPAIR GUIDE -->
+        <div class="page-view" id="viewTechnicianGuide">
+          <div class="page-title-row">
+            <div>
+              <h1 class="page-title">GenAI Technician Copilot & Repair Guide</h1>
+              <p class="page-subtitle">AI-assisted Root Cause Diagnostics, Standard Operating Procedures (SOP), and real-time maintenance assistant.</p>
+            </div>
+            <div class="header-action-group">
+              <button class="btn-tool" id="btnGenSopReport">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <span>Generate Step-by-Step Repair Guide</span>
+              </button>
+              <button class="btn-tool" id="btnAcknowledgeAlert">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Acknowledge Incident</span>
+              </button>
+              <button class="btn-tool" id="btnExportAiReport">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Export Report</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Offline Local Template Fallback Toggle Bar -->
+          <div class="copilot-mode-bar">
+            <div class="offline-toggle-wrap">
+              <label class="switch-toggle" for="offlineFallbackToggle">
+                <input type="checkbox" id="offlineFallbackToggle">
+                <span class="switch-slider"></span>
+              </label>
+              <span class="offline-toggle-label">Offline Local Template Fallback</span>
+            </div>
+            <div class="copilot-mode-status" id="copilotModeStatusBadge">
+              <span class="status-dot-pulse"></span>
+              <span id="copilotModeStatusText">Cloud Gemini 1.5 Pro Active — Live Inference</span>
+            </div>
+          </div>
+
+          <!-- 1. INCIDENT HEADER -->
+          <div class="incident-header-banner" id="incidentHeaderBanner">
+            <div class="incident-badge-row">
+              <div class="incident-severity-pill red">
+                <span class="incident-alert-pulse"></span>
+                <span>RED / HIGH ALERT</span>
+              </div>
+              <div class="gemini-verified-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>Gemini AI Verified</span>
+              </div>
+              <span class="ai-confidence-tag" id="incidentConfidenceText">XGBoost Classifier Confidence: 96.4%</span>
+            </div>
+
+            <h2 class="incident-title" id="incidentTitleText">CRITICAL ALERT: Shaft Misalignment & Bearing Overheating Detected</h2>
+
+            <div class="incident-meta-row">
+              <div class="incident-meta-item">
+                <span class="meta-label">Affected Component:</span>
+                <strong class="meta-val" id="incidentComponentText">775 DC Motor Coupling & 608ZZ Bearing Housing</strong>
+              </div>
+              <div class="incident-meta-item">
+                <span class="meta-label">Incident ID:</span>
+                <span class="meta-val-mono">INC-2026-0809-X44</span>
+              </div>
+              <div class="incident-meta-item">
+                <span class="meta-label">Trigger Time:</span>
+                <span class="meta-val-mono" id="incidentTimestamp">2026-08-09 18:42:15 UTC</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. AI ROOT-CAUSE DIAGNOSIS & ANOMALY STATUS CARDS -->
+          <div class="card diagnosis-card">
+            <div class="card-header">
+              <h2 class="card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                AI Root-Cause Diagnosis & Mechanism
+              </h2>
+              <span class="card-header-badge">Automated Gemini Reasoning</span>
+            </div>
+
+            <div class="root-cause-explanation-box" id="rootCauseExplanationText">
+              High 2x RPM harmonic vibration peak (60 Hz) combined with a rapid temperature rise of +12°C in 3 minutes indicates structural angular misalignment between the motor shaft and 8mm axle.
+            </div>
+
+            <div class="anomaly-cards-grid">
+              <div class="anomaly-card">
+                <div class="anomaly-card-header">
+                  <span class="anomaly-label">2x RPM Harmonic</span>
+                  <div class="anomaly-icon purple">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  </div>
+                </div>
+                <div class="anomaly-val" id="anomalyHarmonicVal">60 Hz</div>
+                <div class="anomaly-subtext" style="color:var(--accent-purple);">Dominant 2X Peak (1.75g)</div>
+              </div>
+
+              <div class="anomaly-card">
+                <div class="anomaly-card-header">
+                  <span class="anomaly-label">Temperature Rise</span>
+                  <div class="anomaly-icon rose">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+                  </div>
+                </div>
+                <div class="anomaly-val" id="anomalyTempRiseVal">+12°C / 3 min</div>
+                <div class="anomaly-subtext" style="color:var(--accent-rose);">Thermal Gradient Spike</div>
+              </div>
+
+              <div class="anomaly-card">
+                <div class="anomaly-card-header">
+                  <span class="anomaly-label">Bearing Temperature</span>
+                  <div class="anomaly-icon amber">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  </div>
+                </div>
+                <div class="anomaly-val" id="anomalyBearingTempVal">High</div>
+                <div class="anomaly-subtext" style="color:var(--accent-amber);">78.5°C (Limit: 75°C)</div>
+              </div>
+
+              <div class="anomaly-card">
+                <div class="anomaly-card-header">
+                  <span class="anomaly-label">Classification Confidence</span>
+                  <div class="anomaly-icon cyan">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                  </div>
+                </div>
+                <div class="anomaly-val" id="anomalyConfidenceVal">96.4%</div>
+                <div class="anomaly-subtext" style="color:var(--accent-cyan);">XGBoost Ensemble Model</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. INTERACTIVE REPAIR CHECKLIST & 4. AI CHAT CONSOLE GRID -->
+          <div class="copilot-workspace-grid">
+            <!-- 3. INTERACTIVE REPAIR CHECKLIST -->
+            <div class="card checklist-card">
+              <div class="card-header">
+                <div class="card-header-left">
+                  <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-emerald)" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><polyline points="9 11 12 14 22 4"/></svg>
+                    Interactive Repair Checklist
+                  </h2>
+                  <div class="checklist-progress-badge" id="checklistProgressBadge">Progress: 0 / 4 completed (0%)</div>
+                </div>
+                <button class="btn-mini-action" id="btnResetChecklist">Reset Steps</button>
+              </div>
+
+              <div class="progress-bar-bg" style="height: 8px; margin-bottom: 18px;">
+                <div class="progress-bar-fill" id="checklistProgressBar" style="width: 0%; background: var(--accent-emerald);"></div>
+              </div>
+
+              <div class="repair-checklist-container">
+                <!-- Step 1 -->
+                <div class="checklist-step-item" id="stepItem1">
+                  <div class="step-checkbox-wrap">
+                    <input type="checkbox" id="chkStep1" class="step-checkbox" data-step="1">
+                  </div>
+                  <div class="step-content">
+                    <div class="step-title-row">
+                      <span class="step-number-pill">Step 1</span>
+                      <label for="chkStep1" class="step-title-text">Power Down & Lockout/Tagout (LOTO) 12V L298N Motor Driver</label>
+                    </div>
+                    <p class="step-desc">Disconnect main 12V DC power bus and secure physical lockout tag to prevent accidental motor spin during mechanical service.</p>
+                    <div class="step-meta-tags">
+                      <span class="step-tag-pill safety">Safety Critical</span>
+                      <span class="step-tag-pill">Tools: LOTO Padlock & Multimeter</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="checklist-step-item" id="stepItem2">
+                  <div class="step-checkbox-wrap">
+                    <input type="checkbox" id="chkStep2" class="step-checkbox" data-step="2">
+                  </div>
+                  <div class="step-content">
+                    <div class="step-title-row">
+                      <span class="step-number-pill">Step 2</span>
+                      <label for="chkStep2" class="step-title-text">Inspect 5mm-to-8mm rigid coupling for loose set screws</label>
+                    </div>
+                    <p class="step-desc">Check M4 grub set screws on the motor shaft hub and 8mm driven axle using a 2.0mm hex key. Check for fretting corrosion or eccentric play.</p>
+                    <div class="step-meta-tags">
+                      <span class="step-tag-pill">Tools: 2.0mm Hex Key, Feeler Gauge</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="checklist-step-item" id="stepItem3">
+                  <div class="step-checkbox-wrap">
+                    <input type="checkbox" id="chkStep3" class="step-checkbox" data-step="3">
+                  </div>
+                  <div class="step-content">
+                    <div class="step-title-row">
+                      <span class="step-number-pill">Step 3</span>
+                      <label for="chkStep3" class="step-title-text">Remove base plate mounting bolts and insert 0.5mm alignment shims under front motor bracket</label>
+                    </div>
+                    <p class="step-desc">Loosen 4x M3 mounting fasteners. Place precision brass shim stock beneath the front bracket to correct vertical angularity to &lt;0.03 mm offset.</p>
+                    <div class="step-meta-tags">
+                      <span class="step-tag-pill">Material: 0.5mm Brass Shims</span>
+                      <span class="step-tag-pill">Target: &lt;0.03 mm</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="checklist-step-item" id="stepItem4">
+                  <div class="step-checkbox-wrap">
+                    <input type="checkbox" id="chkStep4" class="step-checkbox" data-step="4">
+                  </div>
+                  <div class="step-content">
+                    <div class="step-title-row">
+                      <span class="step-number-pill">Step 4</span>
+                      <label for="chkStep4" class="step-title-text">Re-torque bolts to specification and perform manual rotor spin test</label>
+                    </div>
+                    <p class="step-desc">Fasten mounting bolts to 1.8 N·m in cross pattern. Spin motor coupling by hand to verify smooth rotation with zero binding before repowering.</p>
+                    <div class="step-meta-tags">
+                      <span class="step-tag-pill">Spec: 1.8 N·m Torque</span>
+                      <span class="step-tag-pill">Verification: Manual Free Spin</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. AI CHAT CONSOLE -->
+            <div class="card chat-card">
+              <div class="card-header">
+                <div class="card-header-left">
+                  <h2 class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-purple)" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Gemini AI Maintenance Assistant
+                  </h2>
+                  <span class="ai-model-tag">Gemini 1.5 Pro (Industrial Domain Tuned)</span>
+                </div>
+                <div class="chat-status-indicator online" title="Gemini Assistant Ready"></div>
+              </div>
+
+              <!-- Quick Suggestion Buttons -->
+              <div class="suggestion-chips-bar">
+                <span class="chips-label">Suggested Queries:</span>
+                <div class="chips-list">
+                  <button class="btn-suggestion-chip" data-prompt="Explain this fault">Explain this fault</button>
+                  <button class="btn-suggestion-chip" data-prompt="What should I inspect first?">What should I inspect first?</button>
+                  <button class="btn-suggestion-chip" data-prompt="Show repair procedure">Show repair procedure</button>
+                </div>
+              </div>
+
+              <!-- Chat Message Stream -->
+              <div class="chat-message-stream" id="chatMessageStream">
+                <div class="chat-bubble assistant">
+                  <div class="bubble-header">
+                    <span class="bubble-sender">Gemini Copilot</span>
+                    <span class="bubble-time">Just now</span>
+                  </div>
+                  <div class="bubble-body">
+                    Hello Technician. I have analyzed the telemetry for the <strong>775 DC Motor Coupling & 608ZZ Bearing Housing</strong>. A critical 2X harmonic spike at 60 Hz with severe heating indicates angular shaft misalignment. How can I assist you with this repair procedure?
+                  </div>
+                </div>
+              </div>
+
+              <!-- Chat Input Box -->
+              <form class="chat-input-form" id="chatInputForm">
+                <div class="chat-input-wrapper">
+                  <input type="text" id="chatInputText" placeholder="Ask Gemini Assistant..." autocomplete="off">
+                  <button type="submit" class="btn-chat-send" id="btnChatSend" title="Send Query">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPONENT VIEW 4: FLEET ASSET OVERVIEW -->
+        <div class="page-view" id="viewFleetAssets">
+          <div class="page-title-row">
+            <div>
+              <h1 class="page-title">Multi-Machine Plant Fleet Overview</h1>
+              <p class="page-subtitle">Simultaneous real-time health monitoring, remaining useful life (RUL) forecasting, and anomaly tracking across all facility rotating machinery.</p>
+            </div>
+            <div class="header-action-group">
+              <button class="btn-tool" id="btnExportFleetCsv">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Export Fleet Summary (CSV)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 1. HEADER / KPI SUMMARY -->
+          <div class="fleet-summary-kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Total Machines Monitored</span>
+                <div class="kpi-icon cyan">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value">24</span>
+                <span class="kpi-unit">Rigs</span>
+              </div>
+              <div class="kpi-subtext">100% Sensor Coverage</div>
+            </div>
+
+            <div class="kpi-card kpi-healthy-border">
+              <div class="kpi-header">
+                <span class="kpi-label">Healthy Units</span>
+                <div class="kpi-icon emerald">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" style="color:var(--accent-emerald);">19</span>
+                <span class="kpi-unit" style="color:var(--accent-emerald);">Nominal</span>
+              </div>
+              <div class="kpi-subtext">79.2% Fleet Optimal</div>
+            </div>
+
+            <div class="kpi-card kpi-warning-border">
+              <div class="kpi-header">
+                <span class="kpi-label">Maintenance Warning</span>
+                <div class="kpi-icon amber">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" style="color:var(--accent-amber);">3</span>
+                <span class="kpi-unit" style="color:var(--accent-amber);">Caution</span>
+              </div>
+              <div class="kpi-subtext">Scheduled Inspection</div>
+            </div>
+
+            <div class="kpi-card kpi-critical-border">
+              <div class="kpi-header">
+                <span class="kpi-label">Critical Fault</span>
+                <div class="kpi-icon rose">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value" style="color:var(--accent-rose);">2</span>
+                <span class="kpi-unit" style="color:var(--accent-rose);">High Alert</span>
+              </div>
+              <div class="kpi-subtext">Immediate LOTO Required</div>
+            </div>
+
+            <div class="kpi-card fleet-rul-card">
+              <div class="kpi-header">
+                <span class="kpi-label">Fleet Average RUL</span>
+                <div class="kpi-icon purple">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+              </div>
+              <div class="kpi-value-row">
+                <span class="kpi-value">48</span>
+                <span class="kpi-unit">Days</span>
+              </div>
+              <div class="progress-bar-bg" style="height: 6px; margin-top: 6px;">
+                <div class="progress-bar-fill" style="width: 64%; background: linear-gradient(90deg, #8b5cf6, #06b6d4);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. FILTER TOOLBAR & SEARCH BAR -->
+          <div class="fleet-filter-bar">
+            <div class="fleet-search-wrapper">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="fleetSearchInput" placeholder="Search machines by name, line, or fault..." autocomplete="off">
+            </div>
+
+            <div class="fleet-filter-pills">
+              <button class="fleet-filter-pill active" data-fleet-filter="all">All (<span id="countFilterAll">24</span>)</button>
+              <button class="fleet-filter-pill" data-fleet-filter="healthy">Healthy (<span id="countFilterHealthy">19</span>)</button>
+              <button class="fleet-filter-pill" data-fleet-filter="warning">Warning (<span id="countFilterWarning">3</span>)</button>
+              <button class="fleet-filter-pill" data-fleet-filter="critical">Critical (<span id="countFilterCritical">2</span>)</button>
+            </div>
+
+            <div class="select-wrapper-compact">
+              <label for="selectFleetSort">Sort:</label>
+              <select id="selectFleetSort">
+                <option value="health-asc">Health (Low to High)</option>
+                <option value="health-desc">Health (High to Low)</option>
+                <option value="rul-asc">RUL (Urgent First)</option>
+                <option value="vib-desc">Vibration (High to Low)</option>
+                <option value="name-asc">Name (A-Z)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- MAIN FLEET WORKSPACE: 2. MACHINE GRID + 5. LIVE ALERT FEED -->
+          <div class="fleet-workspace-layout">
+            <!-- 2. MACHINE GRID (Left Column) -->
+            <div class="fleet-machines-col">
+              <div class="fleet-cards-grid" id="fleetCardsGrid">
+                <!-- Dynamically Populated with 8+ Machine Cards -->
+              </div>
+            </div>
+
+            <!-- 5. LIVE ALERT FEED PANEL (Right Column) -->
+            <div class="fleet-alert-col">
+              <div class="card alert-feed-card">
+                <div class="card-header">
+                  <div class="card-header-left">
+                    <h2 class="card-title">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-rose)" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                      Live Alert Feed
+                    </h2>
+                    <span class="live-feed-pulse-tag"><span class="pulse-dot-green"></span> Live Stream Active</span>
+                  </div>
+                  <button class="btn-mini-action" id="btnClearAlertFeed">Clear Log</button>
+                </div>
+
+                <div class="alert-feed-list" id="alertFeedList">
+                  <!-- Real-time Alert Events -->
+                  <div class="alert-feed-item critical">
+                    <div class="alert-feed-time">14:32:08</div>
+                    <div class="alert-feed-body">
+                      <div class="alert-feed-header">
+                        <strong>Pump Rig #04</strong>
+                        <span class="status-pill-mini fault">CRITICAL</span>
+                      </div>
+                      <p class="alert-feed-desc">Misalignment detected (2X harmonic 60 Hz, +12°C/3min).</p>
+                    </div>
+                  </div>
+
+                  <div class="alert-feed-item warning">
+                    <div class="alert-feed-time">14:28:51</div>
+                    <div class="alert-feed-body">
+                      <div class="alert-feed-header">
+                        <strong>Motor Rig #03</strong>
+                        <span class="status-pill-mini" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.3);">WARNING</span>
+                      </div>
+                      <p class="alert-feed-desc">1X Imbalance warning threshold exceeded (1.85g).</p>
+                    </div>
+                  </div>
+
+                  <div class="alert-feed-item critical">
+                    <div class="alert-feed-time">14:25:17</div>
+                    <div class="alert-feed-body">
+                      <div class="alert-feed-header">
+                        <strong>Pump Rig #02</strong>
+                        <span class="status-pill-mini fault">CRITICAL</span>
+                      </div>
+                      <p class="alert-feed-desc">BPFO peak detected at 106.5 Hz. Outer raceway defect.</p>
+                    </div>
+                  </div>
+
+                  <div class="alert-feed-item critical">
+                    <div class="alert-feed-time">14:18:02</div>
+                    <div class="alert-feed-body">
+                      <div class="alert-feed-header">
+                        <strong>Cooling Tower Fan #07</strong>
+                        <span class="status-pill-mini fault">CRITICAL</span>
+                      </div>
+                      <p class="alert-feed-desc">Bearing temperature critical (52°C, 2.9 g RMS).</p>
+                    </div>
+                  </div>
+
+                  <div class="alert-feed-item warning">
+                    <div class="alert-feed-time">14:10:44</div>
+                    <div class="alert-feed-body">
+                      <div class="alert-feed-header">
+                        <strong>Compressor Rig #08</strong>
+                        <span class="status-pill-mini" style="background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.3);">WARNING</span>
+                      </div>
+                      <p class="alert-feed-desc">Vibration RMS threshold caution (1.6 g).</p>
+                    </div>
+                  </div>
+
+                  <div class="alert-feed-item healthy">
+                    <div class="alert-feed-time">13:55:12</div>
+                    <div class="alert-feed-body">
+                      <div class="alert-feed-header">
+                        <strong>Pump Rig #01</strong>
+                        <span class="status-pill-mini healthy">HEALTHY</span>
+                      </div>
+                      <p class="alert-feed-desc">Baseline re-calibration complete. Nominal vibration.</p>
+                    </div>
+                  </div>
+
+                  <div class="alert-feed-item healthy">
+                    <div class="alert-feed-time">13:42:00</div>
+                    <div class="alert-feed-body">
+                      <div class="alert-feed-header">
+                        <strong>CNC Spindle Drive #06</strong>
+                        <span class="status-pill-mini healthy">HEALTHY</span>
+                      </div>
+                      <p class="alert-feed-desc">Routine health check passed. Health index 97%.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMPONENT VIEW 5: MOBILE FIELD TECHNICIAN INTERFACE -->
+        <div class="page-view" id="viewFieldTechnician">
+          <!-- 1. MOBILE TOP BAR -->
+          <div class="field-tech-top-bar">
+            <div class="field-brand-group">
+              <div class="brand-icon" style="width:32px; height:32px; font-size:0.95rem;">DX</div>
+              <div>
+                <div class="field-app-title">DOMAIN-X FIELD TECH</div>
+                <div class="field-app-subtitle">Industrial Mobile Diagnostic Tool</div>
+              </div>
+            </div>
+
+            <div class="field-top-right-group">
+              <button class="field-btn-qr" id="btnFieldQrScan" title="Scan Machine QR Code">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="7" y1="17" x2="7" y2="17.01"/><line x1="17" y1="7" x2="17" y2="7.01"/></svg>
+                <span>Scan QR</span>
+              </button>
+
+              <div class="field-status-cluster">
+                <div class="field-connection-pill" title="ESP32 Wireless Telemetry Active">
+                  <span class="pulse-dot-green"></span>
+                  <span>ESP32 Connected</span>
+                </div>
+                <div class="field-battery-pill" title="Mobile Hardware Battery Level">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2" ry="2"/><line x1="22" y1="11" x2="22" y2="13"/><rect x="4" y="9" width="11" height="6" fill="#10b981" stroke="none"/></svg>
+                  <span>88%</span>
+                </div>
+                <div class="field-rig-id-pill" id="fieldRigIdPill">RIG-04</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. ACTIVE ALERT BANNER (High Visibility) -->
+          <div class="field-alert-banner">
+            <div class="field-alert-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="field-alert-content">
+              <div class="field-alert-title">BPFO peak detected at 142 Hz</div>
+              <div class="field-alert-desc">Inspect outer race bearing. Early stage micro-spalling signature detected on driven axle assembly.</div>
+            </div>
+          </div>
+
+          <!-- 2. MACHINE STATUS CARD (With Large Radial Health Score) -->
+          <div class="field-machine-status-card">
+            <div class="field-status-info">
+              <div class="field-severity-pill warning">
+                <span class="status-pulse-amber"></span>
+                <span>WARNING</span>
+              </div>
+              <h2 class="field-machine-fault-title">BEARING OUTER RACE DEFECT</h2>
+              <p class="field-machine-location-text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Pump Rig #04 · Conveyor Line B (SKF 6208 2Z)
+              </p>
+              <div class="field-diagnostic-source-tag">ISO 10816-3 Class II Limit Exceeded</div>
+            </div>
+
+            <!-- Radial Health Score Indicator -->
+            <div class="field-radial-health-wrap">
+              <svg class="field-radial-svg" viewBox="0 0 100 100">
+                <circle class="field-radial-bg" cx="50" cy="50" r="42" />
+                <circle class="field-radial-progress" id="fieldRadialProgress" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="34.3" />
+              </svg>
+              <div class="field-radial-inner">
+                <span class="field-radial-score-val" id="fieldRadialScoreVal">87%</span>
+                <span class="field-radial-score-label">HEALTH</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. TELEMETRY GRID (4 Large Touch-Friendly Cards) -->
+          <div class="field-telemetry-grid">
+            <!-- RPM -->
+            <div class="field-telemetry-card">
+              <div class="field-telemetry-header">
+                <span class="field-telemetry-label">SPEED</span>
+                <div class="field-telemetry-icon cyan">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+              </div>
+              <div class="field-telemetry-val" id="fieldValRpm">1800 <span class="field-telemetry-unit">RPM</span></div>
+              <div class="field-telemetry-subtext">Nominal Sync 1800</div>
+            </div>
+
+            <!-- Temperature -->
+            <div class="field-telemetry-card">
+              <div class="field-telemetry-header">
+                <span class="field-telemetry-label">TEMPERATURE</span>
+                <div class="field-telemetry-icon rose">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+                </div>
+              </div>
+              <div class="field-telemetry-val" id="fieldValTemp">42.5 <span class="field-telemetry-unit">°C</span></div>
+              <div class="field-telemetry-subtext" style="color:var(--accent-amber);">Warning Limit 75°C</div>
+            </div>
+
+            <!-- Vibration RMS -->
+            <div class="field-telemetry-card">
+              <div class="field-telemetry-header">
+                <span class="field-telemetry-label">VIBRATION RMS</span>
+                <div class="field-telemetry-icon amber">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+              </div>
+              <div class="field-telemetry-val" id="fieldValVibRms">1.24 <span class="field-telemetry-unit">g</span></div>
+              <div class="field-telemetry-subtext" style="color:var(--accent-emerald);">ISO Zone A (Good)</div>
+            </div>
+
+            <!-- Dominant Peak -->
+            <div class="field-telemetry-card">
+              <div class="field-telemetry-header">
+                <span class="field-telemetry-label">DOMINANT PEAK</span>
+                <div class="field-telemetry-icon purple">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+              </div>
+              <div class="field-telemetry-val" id="fieldValDominantPeak">142 <span class="field-telemetry-unit">Hz</span></div>
+              <div class="field-telemetry-subtext" style="color:var(--accent-purple);">BPFO Defect Peak</div>
+            </div>
+          </div>
+
+          <!-- 4. GLOVE-FRIENDLY ACTION BUTTONS -->
+          <div class="field-action-buttons-group">
+            <button class="field-big-btn btn-ai-voice" id="btnFieldVoiceAi">
+              <div class="field-big-btn-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+              </div>
+              <div class="field-big-btn-text">
+                <strong>Voice Diagnosis / Ask Gemini Copilot</strong>
+                <span>AI-powered root cause & troubleshooting advice</span>
+              </div>
+            </button>
+
+            <button class="field-big-btn btn-start-repair" id="btnFieldStartRepair">
+              <div class="field-big-btn-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              </div>
+              <div class="field-big-btn-text">
+                <strong>Start Guided Repair Procedure</strong>
+                <span>Interactive Standard Operating Procedure (SOP) checklist</span>
+              </div>
+            </button>
+
+            <button class="field-big-btn btn-view-waveform" id="btnFieldViewWaveform">
+              <div class="field-big-btn-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 12h5l3-9 4 18 3-9h5"/></svg>
+              </div>
+              <div class="field-big-btn-text">
+                <strong>View Live Waveform</strong>
+                <span>Time-domain acceleration a(t) & envelope demodulation</span>
+              </div>
+            </button>
+
+            <button class="field-big-btn btn-view-fft" id="btnFieldViewFft">
+              <div class="field-big-btn-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="10" y1="20" x2="10" y2="10"/><line x1="14" y1="20" x2="14" y2="6"/><line x1="18" y1="20" x2="18" y2="12"/></svg>
+              </div>
+              <div class="field-big-btn-text">
+                <strong>View FFT Spectrum</strong>
+                <span>High-resolution harmonic analysis & kinematics</span>
+              </div>
+            </button>
+          </div>
+
+          <!-- 5. REPAIR STATUS PROGRESS CARD -->
+          <div class="field-repair-status-card">
+            <div class="field-repair-header">
+              <span class="field-repair-title">Active Repair Progress</span>
+              <span class="field-repair-counter" id="fieldRepairCounterText">2 / 4 steps completed (50%)</span>
+            </div>
+            <div class="progress-bar-bg" style="height: 10px; margin-top: 8px;">
+              <div class="progress-bar-fill" id="fieldRepairProgressBar" style="width: 50%; background: var(--accent-emerald);"></div>
+            </div>
+            <div class="field-repair-steps-preview">
+              <div class="field-step-pill done">Step 1: LOTO Power Down</div>
+              <div class="field-step-pill done">Step 2: Inspect 5-8mm Coupling</div>
+              <div class="field-step-pill pending">Step 3: 0.5mm Shimming</div>
+              <div class="field-step-pill pending">Step 4: Spin Test</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- API Connection Readiness Footer -->
+        <div class="api-readiness-bar">
+          <div>
+            <span class="api-status-dot"></span>
+            <strong>DomainXAPI Adapter Status:</strong> <span style="color:#22d3ee;" id="apiAdapterStatus">MOCK_MODE (Simulated Engine Active)</span>
+          </div>
+          <span style="font-size: 0.775rem;">Backend Connection Ready: WebSocket (`ws://localhost:8080/api/telemetry`) & ESP32 payload supported</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Simulated QR Code Camera Scanner Modal -->
+  <div class="field-qr-modal-overlay" id="fieldQrModalOverlay">
+    <div class="field-qr-modal-panel">
+      <div class="field-qr-header">
+        <div class="field-qr-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          <span>Rig Optical QR Scanner</span>
+        </div>
+        <button class="btn-drawer-close" id="btnCloseQrModal" title="Close Scanner">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="field-qr-body">
+        <div class="field-qr-viewfinder">
+          <div class="qr-corner top-left"></div>
+          <div class="qr-corner top-right"></div>
+          <div class="qr-corner bottom-left"></div>
+          <div class="qr-corner bottom-right"></div>
+          <div class="qr-laser-line"></div>
+          <div class="qr-reticle"></div>
+          <div class="qr-detected-tag">
+            <span class="pulse-dot-green"></span>
+            <span>TAG DETECTED: RIG-04 (SKF 6208 2Z)</span>
+          </div>
+        </div>
+        <p class="field-qr-instruction">Point camera at machine asset QR badge on bearing housing or motor coupling frame.</p>
+      </div>
+
+      <div class="field-qr-footer">
+        <button class="btn-tool" style="width:100%; justify-content:center; background:var(--accent-cyan); color:#060913; font-weight:800;" id="btnConfirmQrInspection">
+          Confirm & Inspect RIG-04
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. INDUSTRIAL MOBILE BOTTOM NAVIGATION BAR -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mobile-nav-item active" data-mobile-nav="field" title="Field Technician Dashboard">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      <span>Dashboard</span>
+    </button>
+
+    <button class="mobile-nav-item" data-mobile-nav="fleet" title="Fleet Machines Overview">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span>Machines</span>
+    </button>
+
+    <button class="mobile-nav-item" data-mobile-nav="fft" title="FFT Spectrum Diagnostics">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>FFT</span>
+    </button>
+
+    <button class="mobile-nav-item" data-mobile-nav="copilot" title="Gemini AI Assistant">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>AI Assistant</span>
+    </button>
+
+    <button class="mobile-nav-item" data-mobile-nav="alerts" title="Plant Live Alerts">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span>Alerts</span>
+    </button>
+  </nav>
+
+  <!-- Slide-Over AI Technician Copilot Drawer Modal Overlay -->
+  <div class="copilot-drawer-overlay" id="copilotDrawerOverlay">
+    <div class="copilot-drawer-panel" id="copilotDrawerPanel">
+      <div class="copilot-drawer-header">
+        <div class="copilot-drawer-title-group">
+          <div class="brand-icon" style="width:34px; height:34px; font-size:1rem;">AI</div>
+          <div>
+            <h3 class="copilot-drawer-title">Gemini AI Technician Copilot</h3>
+            <span class="copilot-drawer-subtitle">Live Incident Assistant & Step-by-Step SOP</span>
+          </div>
+        </div>
+        <button class="btn-drawer-close" id="btnCloseCopilotDrawer" title="Close Copilot Drawer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="copilot-drawer-body">
+        <!-- Quick Alert Summary -->
+        <div class="incident-header-banner mini">
+          <div class="incident-badge-row">
+            <div class="incident-severity-pill red">
+              <span class="incident-alert-pulse"></span>
+              <span>RED / HIGH ALERT</span>
+            </div>
+            <div class="gemini-verified-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <span>Gemini Verified</span>
+            </div>
+          </div>
+          <h4 class="incident-title" style="font-size:1.05rem; margin-top:8px;">CRITICAL ALERT: Shaft Misalignment & Bearing Overheating</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">Component: 775 DC Motor Coupling & 608ZZ Bearing Housing</p>
+        </div>
+
+        <!-- Root Cause Mini Note -->
+        <div class="root-cause-explanation-box mini" style="margin: 14px 0;">
+          High 2x RPM harmonic peak (60 Hz) and rapid temperature rise of +12°C in 3 minutes indicates structural angular shaft misalignment.
+        </div>
+
+        <!-- Quick 4 Step Checklist in Drawer -->
+        <div class="drawer-checklist-section">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase;">Quick SOP Checklist</span>
+            <span style="font-size:0.75rem; color:var(--accent-emerald);" id="drawerProgressText">0 / 4 Completed</span>
+          </div>
+          <div class="repair-checklist-container mini" id="drawerChecklistContainer">
+            <!-- Synced with main checklist -->
+          </div>
+        </div>
+
+        <!-- Mini AI Chat Area -->
+        <div class="drawer-chat-section">
+          <div style="font-size:0.8rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; margin-bottom:8px;">Ask Copilot Assistant</div>
+          <div class="suggestion-chips-bar" style="margin-bottom:8px;">
+            <div class="chips-list">
+              <button class="btn-suggestion-chip" data-prompt="Explain this fault">Explain fault</button>
+              <button class="btn-suggestion-chip" data-prompt="What should I inspect first?">Inspect first</button>
+              <button class="btn-suggestion-chip" data-prompt="Show repair procedure">Repair steps</button>
+            </div>
+          </div>
+          <div class="chat-message-stream drawer-stream" id="drawerChatStream">
+            <div class="chat-bubble assistant">
+              <div class="bubble-body" style="font-size:0.8rem;">
+                Gemini Copilot ready. Shaft misalignment detected on 775 DC motor drive. How can I help?
+              </div>
+            </div>
+          </div>
+          <form class="chat-input-form" id="drawerChatForm">
+            <div class="chat-input-wrapper">
+              <input type="text" id="drawerChatInput" placeholder="Ask Gemini Assistant..." autocomplete="off">
+              <button type="submit" class="btn-chat-send">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="copilot-drawer-footer">
+        <button class="btn-tool" style="width:100%; justify-content:center;" id="btnDrawerOpenFullView">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>Open Full Technician Guide View</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
